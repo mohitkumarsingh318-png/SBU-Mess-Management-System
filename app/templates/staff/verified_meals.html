@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Verified Meals - Staff{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-check-circle"></i> Verified Meals Today</h2>
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if verified_meals %}
+        <table class="table">
+            <thead>
+                <tr><th>Time</th><th>Student</th><th>Meal Type</th><th>Token</th></tr>
+            </thead>
+            <tbody>
+                {% for meal in verified_meals %}
+                <tr>
+                    <td>{{ meal.verified_at.strftime('%I:%M %p') }}</td>
+                    <td>{{ meal.user.full_name }}</td>
+                    <td class="text-capitalize">{{ meal.meal_type }}</td>
+                    <td><code>{{ meal.token }}</code></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="text-muted text-center">No meals verified yet today.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

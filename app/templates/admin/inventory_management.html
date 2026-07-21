@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Inventory - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-box-seam"></i> Inventory Management</h2>
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr><th>Name</th><th>Category</th><th>Quantity</th><th>Min Threshold</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="{{ 'table-warning' if item.is_low_stock() else '' }}">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.quantity }} {{ item.unit }}</td>
+                    <td>{{ item.min_threshold }} {{ item.unit }}</td>
+                    <td>
+                        {% if item.is_low_stock() %}
+                        <span class="badge bg-danger">Low</span>
+                        {% else %}
+                        <span class="badge bg-success">OK</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.delete_inventory_item', item_id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="addItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.add_inventory_item') }}">
+                <div class="modal-header">
+                    <h5>Add Inventory Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-2" name="name" placeholder="Item Name" required>
+                    <input type="text" class="form-control mb-2" name="category" placeholder="Category" required>
+                    <input type="number" class="form-control mb-2" name="quantity" placeholder="Quantity" step="0.01" required>
+                    <input type="text" class="form-control mb-2" name="unit" placeholder="Unit (kg/liters)" required>
+                    <input type="number" class="form-control mb-2" name="min_threshold" placeholder="Min Threshold" step="0.01" required>
+                    <input type="number" class="form-control mb-2" name="unit_price" placeholder="Unit Price" step="0.01">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

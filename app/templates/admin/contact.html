@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Contact - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-envelope"></i> Contact Mess Administrator</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Administrator Details</h5>
+                <p class="mb-2"><strong>Name:</strong> {{ support_contact.name }}</p>
+                <p class="mb-2"><strong>Email:</strong> <a href="mailto:{{ support_contact.email }}">{{ support_contact.email }}</a></p>
+                <p class="mb-2"><strong>Phone:</strong> <a href="tel:{{ support_contact.phone }}">{{ support_contact.phone }}</a></p>
+                <p class="mb-2"><strong>Office:</strong> {{ support_contact.office }}</p>
+                <p class="mb-0"><strong>Working hours:</strong> {{ support_contact.working_hours }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Need Assistance?</h5>
+                <p>{{ support_contact.note }}</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="mailto:{{ support_contact.email }}" class="btn btn-primary">
+                        <i class="bi bi-envelope-fill"></i> Email Administrator
+                    </a>
+                    <a href="tel:{{ support_contact.phone }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-telephone-fill"></i> Call Office
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

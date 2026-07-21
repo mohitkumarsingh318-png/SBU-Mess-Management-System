@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Daily Report - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-file-earmark-text"></i> Daily Report</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Report for {{ stats.date.strftime('%d %B, %Y') }}</h5>
+        <a href="{{ url_for('admin.download_daily_pdf', date=report_date) }}" class="btn btn-light btn-sm">
+            <i class="bi bi-file-pdf"></i> Download PDF
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6>Total Bookings</h6>
+                        <h2>{{ stats.total_bookings }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6>Consumed</h6>
+                        <h2>{{ stats.consumed }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h6>Pending</h6>
+                        <h2>{{ stats.pending }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h6>Cancelled</h6>
+                        <h2>{{ stats.cancelled }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h5 class="mt-4">Meal Breakdown</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Meal Type</th>
+                    <th>Bookings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Breakfast</td>
+                    <td>{{ stats.breakfast }}</td>
+                </tr>
+                <tr>
+                    <td>Lunch</td>
+                    <td>{{ stats.lunch }}</td>
+                </tr>
+                <tr>
+                    <td>Dinner</td>
+                    <td>{{ stats.dinner }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="mt-3">
+            <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary">Back to Reports</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-list-ul"></i> My Bookings</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if bookings.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Meal Type</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Token/QR Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings.items %}
+                    <tr>
+                        <td>{{ booking.booking_date.strftime('%d %b, %Y') }}</td>
+                        <td class="text-capitalize">{{ booking.meal_type }}</td>
+                        <td>₹{{ "%.2f"|format(booking.price) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if booking.status == 'consumed' else 'primary' if booking.status == 'booked' else 'secondary' }}">
+                                {{ booking.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if booking.status == 'booked' %}
+                            <div class="d-flex align-items-center gap-2">
+                                <code class="me-2">{{ booking.token }}</code>
+                                {% if booking.qr_code %}
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#qrModal{{ booking.id }}">
+                                    <i class="bi bi-qr-code"></i> QR
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if booking.status == 'booked' and booking.booking_date > today %}
+                            <a href="{{ url_for('student.cancel_booking', booking_id=booking.id) }}" 
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if bookings.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if bookings.has_prev %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('student.my_bookings', page=bookings.prev_num) }}">Previous</a></li>
+                {% endif %}
+                {% for p in bookings.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {{ 'active' if p == bookings.page else '' }}">
+                        <a class="page-link" href="{{ url_for('student.my_bookings', page=p) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if bookings.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('student.my_bookings', page=bookings.next_num) }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted text-center">No bookings found. <a href="{{ url_for('student.book_meal') }}">Book your first meal!</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- QR Code Modals -->
+{% for booking in bookings.items %}
+{% if booking.qr_code %}
+<div class="modal fade" id="qrModal{{ booking.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-qr-code-scan"></i> Booking QR Code</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p><strong>Booking Details:</strong></p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-calendar"></i> {{ booking.booking_date.strftime('%d %b, %Y') }}</li>
+                    <li><i class="bi bi-clock"></i> {{ booking.meal_type.capitalize() }}</li>
+                    <li><i class="bi bi-tag"></i> ₹{{ "%.2f"|format(booking.price) }}</li>
+                </ul>
+                <hr>
+                <img src="{{ booking.qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+                <p class="mt-3"><small class="text-muted">Show this QR code to staff for verification</small></p>
+                <p><code>{{ booking.token }}</code></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Import today from Flask context
+const today = new Date("{{ today.strftime('%Y-%m-%d') }}");
+</script>
+{% endblock %}

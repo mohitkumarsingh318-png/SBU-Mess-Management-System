@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}User Management - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-people"></i> User Management</h2>
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
+    <i class="bi bi-person-plus"></i> Add User
+</button>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr><th>Name</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.username }}</td>
+                    <td><span class="badge bg-primary">{{ user.role }}</span></td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" class="btn btn-sm btn-warning">Toggle</a>
+                        <a href="{{ url_for('admin.delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.add_user') }}">
+                <div class="modal-header">
+                    <h5>Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-2" name="full_name" placeholder="Full Name" required>
+                    <input type="text" class="form-control mb-2" name="username" placeholder="Username" required>
+                    <input type="email" class="form-control mb-2" name="email" placeholder="Email" required>
+                    <input type="password" class="form-control mb-2" name="password" placeholder="Password" required>
+                    <input type="tel" class="form-control mb-2" name="phone" placeholder="Phone">
+                    <select class="form-select" name="role" required>
+                        <option value="staff">Staff</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

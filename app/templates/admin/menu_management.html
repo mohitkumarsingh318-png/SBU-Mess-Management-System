@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Menu Management - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-calendar-week"></i> Menu Management</h2>
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addMenuModal">
+    <i class="bi bi-plus-circle"></i> Add Menu
+</button>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Date</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th></tr>
+                </thead>
+                <tbody>
+                    {% for date in week_dates %}
+                    <tr>
+                        <td>{{ date.strftime('%d %b') }}</td>
+                        <td>{{ menu_dict.get(date, {}).get('breakfast').items if menu_dict.get(date, {}).get('breakfast') else '-' }}</td>
+                        <td>{{ menu_dict.get(date, {}).get('lunch').items if menu_dict.get(date, {}).get('lunch') else '-' }}</td>
+                        <td>{{ menu_dict.get(date, {}).get('dinner').items if menu_dict.get(date, {}).get('dinner') else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addMenuModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Menu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.add_menu') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Date</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Meal Type</label>
+                        <select class="form-select" name="meal_type" required>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Items</label>
+                        <textarea class="form-control" name="items" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

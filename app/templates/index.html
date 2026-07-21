@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - SBU Mess Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-house-door-fill text-primary"></i>
+            Welcome to SBU Mess Management System
+        </h1>
+        <p class="lead text-muted mb-5">
+            Sarala Birla University - Digital Mess Booking & Management Platform
+        </p>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calendar-check display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Book Meals</h5>
+                        <p class="card-text text-muted">Reserve your meals in advance and reduce food waste</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-credit-card display-4 text-info mb-3"></i>
+                        <h5 class="card-title">Track Payments</h5>
+                        <p class="card-text text-muted">View your bills and payment history online</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-qr-code-scan display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">QR Verification</h5>
+                        <p class="card-text text-muted">Quick and secure meal verification system</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5 me-2">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

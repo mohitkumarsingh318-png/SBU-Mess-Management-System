@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Monthly Report - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-calendar-month"></i> Monthly Report</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Report for {{ stats.month }}</h5>
+        <a href="{{ url_for('admin.download_monthly_pdf', date=report_date) }}" class="btn btn-light btn-sm">
+            <i class="bi bi-file-pdf"></i> Download PDF
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h6>Total Bookings</h6>
+                        <h2>{{ stats.total_bookings }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6>Total Revenue</h6>
+                        <h2>₹{{ "%.2f"|format(stats.total_revenue) }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6>Active Students</h6>
+                        <h2>{{ stats.total_students }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary">Back to Reports</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

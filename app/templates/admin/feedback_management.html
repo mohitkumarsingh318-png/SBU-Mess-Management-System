@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Feedback - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-chat-left-text"></i> Feedback Management</h2>
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% for feedback in feedbacks %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6>{{ feedback.subject }} <span class="badge bg-warning">{{ feedback.status }}</span></h6>
+                <p>{{ feedback.message }}</p>
+                <small>by {{ feedback.user.full_name }} - {{ feedback.created_at.strftime('%d %b, %Y') }}</small>
+                <form method="POST" action="{{ url_for('admin.respond_feedback', feedback_id=feedback.id) }}" class="mt-2">
+                    <textarea class="form-control mb-2" name="response" placeholder="Admin response"></textarea>
+                    <select class="form-select mb-2" name="status">
+                        <option value="reviewed">Reviewed</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Respond</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

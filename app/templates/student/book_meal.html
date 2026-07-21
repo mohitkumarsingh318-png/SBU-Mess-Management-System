@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Book Meal - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-plus-circle"></i> Book a Meal</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Book Your Meal</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('student.book_meal') }}">
+                    <div class="mb-3">
+                        <label for="booking_date" class="form-label">Select Date</label>
+                        <input type="date" class="form-control" id="booking_date" name="booking_date" 
+                               min="{{ today.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="meal_type" class="form-label">Meal Type</label>
+                        <select class="form-select" id="meal_type" name="meal_type" required>
+                            <option value="">-- Select Meal --</option>
+                            <option value="breakfast">Breakfast (₹30)</option>
+                            <option value="lunch">Lunch (₹50)</option>
+                            <option value="dinner">Dinner (₹45)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> You can cancel bookings at least 1 day before the meal date.
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Book Meal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Upcoming Menu</h5>
+            </div>
+            <div class="card-body">
+                {% if menus %}
+                    {% for menu in menus %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6>{{ menu.date.strftime('%d %b, %Y') }} - <span class="text-capitalize">{{ menu.meal_type }}</span></h6>
+                        <p class="mb-0">{{ menu.items }}</p>
+                        {% if menu.special_note %}
+                        <small class="text-muted">{{ menu.special_note }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center mb-0">Menu not yet available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

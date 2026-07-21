@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Bookings - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-list-ul"></i> All Bookings</h2>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr><th>Date</th><th>Student</th><th>Meal</th><th>Status</th><th>Token</th></tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.booking_date.strftime('%d %b, %Y') }}</td>
+                    <td>{{ booking.user.full_name }}</td>
+                    <td class="text-capitalize">{{ booking.meal_type }}</td>
+                    <td><span class="badge bg-primary">{{ booking.status }}</span></td>
+                    <td><code>{{ booking.token }}</code></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

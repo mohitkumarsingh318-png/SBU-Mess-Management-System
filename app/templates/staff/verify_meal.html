@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Meal - Staff Portal{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-check-circle"></i> Verify Meal</h2>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Enter Meal Token</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('staff.verify_meal') }}">
+                    <div class="mb-3">
+                        <label for="token" class="form-label">Meal Token</label>
+                        <input type="text" class="form-control form-control-lg" id="token" name="token" 
+                               placeholder="Enter or scan token" required autofocus>
+                        <small class="text-muted">Scan QR code or enter token manually</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Verify Meal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3 bg-light border-0">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle"></i> Instructions:</h6>
+                <ul class="mb-0">
+                    <li>Ask the student for their meal token</li>
+                    <li>Enter the token in the field above</li>
+                    <li>Click "Verify Meal" to confirm</li>
+                    <li>System will validate and mark the meal as consumed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

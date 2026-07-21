@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-people"></i> Total Students</h6>
+                <h3 class="mb-0">{{ total_students }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-calendar-check"></i> Today's Bookings</h6>
+                <h3 class="mb-0">{{ today_breakfast + today_lunch + today_dinner }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-currency-rupee"></i> Monthly Revenue</h6>
+                <h3 class="mb-0">₹{{ "%.2f"|format(monthly_revenue) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-star"></i> Avg Rating</h6>
+                <h3 class="mb-0">{{ avg_rating }}/5</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-sunrise"></i> Breakfast: {{ today_breakfast }}</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-sun"></i> Lunch: {{ today_lunch }}</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-moon"></i> Dinner: {{ today_dinner }}</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Low Stock Items</h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock_items %}
+                <div class="list-group list-group-flush">
+                    {% for item in low_stock_items %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">{{ item.name }}</h6>
+                            <small class="text-muted">{{ item.category }}</small>
+                        </div>
+                        <span class="badge bg-danger">{{ item.quantity }} {{ item.unit }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('admin.inventory_management') }}" class="btn btn-sm btn-outline-danger">Manage Inventory</a>
+                </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">All items are sufficiently stocked.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Pending Feedback</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_feedback %}
+                <div class="list-group list-group-flush">
+                    {% for feedback in recent_feedback %}
+                    <div class="list-group-item">
+                        <h6 class="mb-1">{{ feedback.subject }}</h6>
+                        <small class="text-muted">by {{ feedback.user.full_name }} - {{ feedback.created_at.strftime('%d %b') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('admin.feedback_management') }}" class="btn btn-sm btn-outline-warning">View All Feedback</a>
+                </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No pending feedback.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-grid"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body text-center">
+                <a href="{{ url_for('admin.menu_management') }}" class="btn btn-primary me-2 mb-2">
+                    <i class="bi bi-calendar-week"></i> Manage Menu
+                </a>
+                <a href="{{ url_for('admin.user_management') }}" class="btn btn-success me-2 mb-2">
+                    <i class="bi bi-people"></i> Manage Users
+                </a>
+                <a href="{{ url_for('admin.bookings') }}" class="btn btn-info me-2 mb-2">
+                    <i class="bi bi-list-ul"></i> View Bookings
+                </a>
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-warning me-2 mb-2">
+                    <i class="bi bi-credit-card"></i> Manage Payments
+                </a>
+                <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary mb-2">
+                    <i class="bi bi-megaphone"></i> Announcements
+                </a>
+                <a href="{{ url_for('admin.contact') }}" class="btn btn-outline-primary mb-2">
+                    <i class="bi bi-envelope"></i> Contact Admin
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

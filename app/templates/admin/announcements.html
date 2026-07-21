@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Announcements - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-megaphone"></i> Announcements</h2>
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add Announcement</button>
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% for announcement in announcements %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6>{{ announcement.title }} <span class="badge bg-{{ 'success' if announcement.is_active else 'secondary' }}">{{ 'Active' if announcement.is_active else 'Inactive' }}</span></h6>
+                <p>{{ announcement.content }}</p>
+                <small>Target: {{ announcement.target_role }} | Priority: {{ announcement.priority }}</small>
+                <div class="mt-2">
+                    <a href="{{ url_for('admin.toggle_announcement', announcement_id=announcement.id) }}" class="btn btn-sm btn-warning">Toggle</a>
+                    <a href="{{ url_for('admin.delete_announcement', announcement_id=announcement.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.add_announcement') }}">
+                <div class="modal-header">
+                    <h5>Add Announcement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-2" name="title" placeholder="Title" required>
+                    <textarea class="form-control mb-2" name="content" placeholder="Content" required></textarea>
+                    <select class="form-select mb-2" name="priority">
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                    <select class="form-select mb-2" name="target_role">
+                        <option value="all">All</option>
+                        <option value="student">Students</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                    <input type="date" class="form-control" name="expires_at" placeholder="Expiry Date">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

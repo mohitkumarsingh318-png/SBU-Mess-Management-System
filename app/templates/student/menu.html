@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-calendar-week"></i> Weekly Menu</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Week: {{ week_start.strftime('%d %b') }} - {{ week_end.strftime('%d %b, %Y') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Breakfast</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date in week_dates %}
+                    <tr>
+                        <td><strong>{{ date.strftime('%d %b, %a') }}</strong></td>
+                        <td>{% set breakfast = menu_dict.get(date, {}).get('breakfast') %}{{ breakfast.items if breakfast else 'Not available' }}</td>
+                        <td>{% set lunch = menu_dict.get(date, {}).get('lunch') %}{{ lunch.items if lunch else 'Not available' }}</td>
+                        <td>{% set dinner = menu_dict.get(date, {}).get('dinner') %}{{ dinner.items if dinner else 'Not available' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

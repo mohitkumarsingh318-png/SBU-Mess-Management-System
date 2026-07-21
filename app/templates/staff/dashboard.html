@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard - SBU Mess Management{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Staff Dashboard</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-sunrise"></i> Breakfast</h6>
+                <h3 class="mb-0">{{ breakfast_count }}</h3>
+                <small>Bookings Today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-sun"></i> Lunch</h6>
+                <h3 class="mb-0">{{ lunch_count }}</h3>
+                <small>Bookings Today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-moon"></i> Dinner</h6>
+                <h3 class="mb-0">{{ dinner_count }}</h3>
+                <small>Bookings Today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-exclamation-triangle"></i> Low Stock</h6>
+                <h3 class="mb-0">{{ low_stock_items|length }}</h3>
+                <small>Items</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Today's Menu</h5>
+            </div>
+            <div class="card-body">
+                {% if todays_menu %}
+                    {% for menu in todays_menu %}
+                    <div class="mb-3">
+                        <h6 class="text-capitalize"><i class="bi bi-clock"></i> {{ menu.meal_type }}</h6>
+                        <p class="mb-0">{{ menu.items }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center mb-0">No menu available for today.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Low Stock Alerts</h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock_items %}
+                <div class="list-group list-group-flush">
+                    {% for item in low_stock_items %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">{{ item.name }}</h6>
+                            <small class="text-muted">{{ item.category }}</small>
+                        </div>
+                        <span class="badge bg-danger">{{ item.quantity }} {{ item.unit }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">All items are in stock.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body text-center">
+                <a href="{{ url_for('staff.verify_meal') }}" class="btn btn-primary btn-lg me-2">
+                    <i class="bi bi-qr-code-scan"></i> Verify Meal
+                </a>
+                <a href="{{ url_for('staff.meal_counts') }}" class="btn btn-info btn-lg me-2">
+                    <i class="bi bi-graph-up"></i> View Meal Counts
+                </a>
+                <a href="{{ url_for('staff.inventory') }}" class="btn btn-warning btn-lg">
+                    <i class="bi bi-box-seam"></i> Manage Inventory
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

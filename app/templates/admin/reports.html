@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Reports - Admin{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-file-earmark-bar-graph"></i> Reports</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Daily Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('admin.reports') }}">
+                    <input type="hidden" name="type" value="daily">
+                    <div class="mb-3">
+                        <label class="form-label">Select Date</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Generate Daily Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Monthly Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('admin.reports') }}">
+                    <input type="hidden" name="type" value="monthly">
+                    <div class="mb-3">
+                        <label class="form-label">Select Month</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Generate Monthly Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
