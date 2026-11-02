@@ -54,6 +54,10 @@ The Mess Management System replaces manual mess operations with a modern web app
    http://127.0.0.1:5000
    ```
 
+## Render Deployment
+
+The `.python-version` file pins the Render runtime to Python 3.12.8 for compatibility with the dependencies. Use `pip install -r requirements.txt` as the build command and `gunicorn run:app --bind 0.0.0.0:$PORT` as the start command.
+
 ## Demo Credentials
 
 - Admin: `admin` / `admin123`
