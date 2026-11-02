@@ -1,4 +1,4 @@
-/* Custom Styles for SBU Mess Management System */
+/* Custom Styles for Mess Management System */
 
 :root {
     --primary-color: #6366f1;
@@ -618,4 +618,3 @@ h2 {
 .shadow-xl {
     box-shadow: var(--shadow-xl) !important;
 }
-

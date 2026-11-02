@@ -43,6 +43,7 @@ instance/
 # Environment Variables
 .env
 .env.*
+!.env.example
 .env.local
 .flaskenv
 

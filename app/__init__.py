@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_mail import Mail
+from dotenv import load_dotenv
 import os
 
 db = SQLAlchemy()
@@ -11,6 +12,7 @@ migrate = Migrate()
 mail = Mail()
 
 def create_app():
+    load_dotenv()
     app = Flask(__name__)
     
     # Configuration
@@ -25,7 +27,7 @@ def create_app():
     app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER') or 'noreply@sbumess.edu'
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER') or 'noreply@example.com'
     
     # Initialize extensions
     db.init_app(app)

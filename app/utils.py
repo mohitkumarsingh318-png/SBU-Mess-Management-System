@@ -1,5 +1,5 @@
 """
-Utility functions for SBU Mess Management System
+Utility functions for Mess Management System
 Includes QR code generation, PDF generation, and email notifications
 """
 
@@ -107,7 +107,7 @@ def generate_daily_report_pdf(stats, report_date):
     )
     
     # Title
-    title = Paragraph("SBU Mess Management System", title_style)
+    title = Paragraph("Mess Management System", title_style)
     subtitle = Paragraph(f"Daily Report - {stats['date'].strftime('%B %d, %Y')}", styles['Heading2'])
     elements.append(title)
     elements.append(subtitle)
@@ -212,7 +212,7 @@ def generate_monthly_report_pdf(stats, report_date):
     )
     
     # Title
-    title = Paragraph("SBU Mess Management System", title_style)
+    title = Paragraph("Mess Management System", title_style)
     subtitle = Paragraph(f"Monthly Report - {stats['month']}", styles['Heading2'])
     elements.append(title)
     elements.append(subtitle)
@@ -272,7 +272,7 @@ def send_email(to, subject, template, **kwargs):
         msg = Message(
             subject=subject,
             recipients=[to] if isinstance(to, str) else to,
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@sbumess.edu')
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@example.com')
         )
         
         # Render email template
@@ -316,7 +316,7 @@ def render_email_template(template_name, **kwargs):
                     </ul>
                 </div>
                 <p>Please show this token to staff during meal verification.</p>
-                <p>Thank you,<br>SBU Mess Management Team</p>
+                <p>Thank you,<br>Mess Management Team</p>
             </body>
             </html>
         """,
@@ -335,7 +335,7 @@ def render_email_template(template_name, **kwargs):
                     </ul>
                 </div>
                 <p>If you did not request this cancellation, please contact the admin immediately.</p>
-                <p>Thank you,<br>SBU Mess Management Team</p>
+                <p>Thank you,<br>Mess Management Team</p>
             </body>
             </html>
         """,
@@ -356,7 +356,7 @@ def render_email_template(template_name, **kwargs):
                     </ul>
                 </div>
                 <p>Thank you for your payment!</p>
-                <p>Best regards,<br>SBU Mess Management Team</p>
+                <p>Best regards,<br>Mess Management Team</p>
             </body>
             </html>
         """,
@@ -373,7 +373,7 @@ def render_email_template(template_name, **kwargs):
                     </ul>
                 </div>
                 <p>Please restock these items as soon as possible.</p>
-                <p>System Alert,<br>SBU Mess Management System</p>
+                <p>System Alert,<br>Mess Management System</p>
             </body>
             </html>
         """

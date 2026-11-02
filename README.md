@@ -1,10 +1,10 @@
-# SBU Mess Management System
+# Mess Management System
 
-A digital mess management system for Sarala Birla University that streamlines meal booking, menu planning, inventory tracking, payments, announcements, and feedback across student, staff, and admin roles.
+A digital mess management system that streamlines meal booking, menu planning, inventory tracking, payments, announcements, and feedback across student, staff, and admin roles.
 
 ## Project Overview
 
-The SBU Mess Management System replaces manual mess operations with a modern web application.
+The Mess Management System replaces manual mess operations with a modern web application.
 
 - Students can book meals, view menus, track payments, and submit feedback.
 - Staff can verify meals, monitor meal counts, and manage inventory.
@@ -25,7 +25,7 @@ The SBU Mess Management System replaces manual mess operations with a modern web
 ## Technology Stack
 
 - Backend: Flask (Python)
-- Database: SQLite (development), PostgreSQL (production-ready)
+- Database: SQLAlchemy with SQLite for local development or MySQL for deployment
 - Frontend: HTML5, CSS3, Bootstrap 5, JavaScript
 - ORM: SQLAlchemy
 
@@ -40,18 +40,11 @@ The SBU Mess Management System replaces manual mess operations with a modern web
    ```powershell
    pip install -r requirements.txt
    ```
-4. Create a `.env` file at the repository root if you need to override default values.
-   Example settings:
+4. Copy `.env.example` to `.env`. To use MySQL, first create a database with your database provider, then set the connection URL in `.env`:
    ```text
-   SECRET_KEY=your-secret-key
-   DATABASE_URL=sqlite:///mess_management.db
-   MAIL_SERVER=smtp.gmail.com
-   MAIL_PORT=587
-   MAIL_USE_TLS=true
-   MAIL_USERNAME=your-email@example.com
-   MAIL_PASSWORD=your-email-password
-   MAIL_DEFAULT_SENDER=noreply@sbumess.edu
+   DATABASE_URL=mysql+pymysql://username:password@host:3306/database_name
    ```
+   Replace the placeholders with the values from your MySQL provider. URL-encode special characters in the password. Keep `.env` private; for Render, configure `DATABASE_URL` as a service environment variable and allow the app host to connect to the database. If `DATABASE_URL` is unset, the app uses its local SQLite database.
 5. Run the application:
    ```powershell
    python run.py
@@ -71,6 +64,7 @@ The SBU Mess Management System replaces manual mess operations with a modern web
 
 - The repository already ignores environment files such as `.env` and `.env.*`.
 - Use `.env` for sensitive credentials and do not commit secret values to Git.
+- The app creates missing tables on startup, but switching from SQLite to MySQL does not copy existing records. Back up or migrate any data you need to keep.
 
 ## Documentation
 

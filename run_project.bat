@@ -1,7 +1,7 @@
 
 @echo off
 echo ==========================================
-echo SBU Mess Management System
+echo Mess Management System
 echo ==========================================
 echo.
 

@@ -552,7 +552,7 @@ def contact():
     """Admin contact information"""
     support_contact = {
         'name': 'Mess Administrator',
-        'email': 'mess-admin@sbu.edu.in',
+        'email': 'mess-admin@example.com',
         'phone': '+91-9876543210',
         'office': 'Mess Office, Hostel Block A',
         'working_hours': 'Monday - Friday, 09:00 AM - 05:00 PM',

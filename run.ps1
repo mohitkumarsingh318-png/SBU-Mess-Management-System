@@ -1,8 +1,8 @@
-# SBU Mess Management - Automated Run Script
+# Mess Management - Automated Run Script
 # This script sets up the virtual environment and runs the application
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "SBU Mess Management System" -ForegroundColor Cyan
+Write-Host "Mess Management System" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

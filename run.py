@@ -35,7 +35,7 @@ def init_db():
     # Create admin user
     admin = User(
         username='admin',
-        email='admin@sbu.ac.in',
+        email='admin@example.com',
         full_name='System Administrator',
         role='admin',
         phone='9876543210'
@@ -46,7 +46,7 @@ def init_db():
     # Create staff user
     staff = User(
         username='staff',
-        email='staff@sbu.ac.in',
+        email='staff@example.com',
         full_name='Mess Staff',
         role='staff',
         phone='9876543211'
@@ -59,9 +59,9 @@ def init_db():
     for i in range(1, 11):
         student = User(
             username=f'student{i}',
-            email=f'student{i}@sbu.ac.in',
+            email=f'student{i}@example.com',
             full_name=f'Student {i}',
-            roll_number=f'SBU2024{i:03d}',
+            roll_number=f'STUDENT2024{i:03d}',
             role='student',
             phone=f'98765432{i:02d}'
         )
@@ -181,7 +181,7 @@ def init_db():
     
     # Create sample announcement
     announcement = Announcement(
-        title='Welcome to SBU Mess Management System',
+        title='Welcome to Mess Management System',
         content='This is the new digital mess management system. You can now book meals, view menus, and track payments online. For any issues, please contact the mess administrator.',
         priority='high',
         target_role='all',
