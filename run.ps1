@@ -32,11 +32,6 @@ Write-Host "[*] Starting application..." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Open browser: http://127.0.0.1:5000" -ForegroundColor Green
 Write-Host ""
-Write-Host "Login Credentials:" -ForegroundColor Cyan
-Write-Host "  Admin:   admin / admin123" -ForegroundColor White
-Write-Host "  Staff:   staff / staff123" -ForegroundColor White
-Write-Host "  Student: student1 / student123" -ForegroundColor White
-Write-Host ""
 Write-Host "Press CTRL+C to stop the server" -ForegroundColor Yellow
 Write-Host ""
 

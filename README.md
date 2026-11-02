@@ -58,11 +58,7 @@ The Mess Management System replaces manual mess operations with a modern web app
 
 The `.python-version` file pins the Render runtime to Python 3.12.8 for compatibility with the dependencies. Use `pip install -r requirements.txt` as the build command and `gunicorn run:app --bind 0.0.0.0:$PORT` as the start command.
 
-## Demo Credentials
-
-- Admin: `admin` / `admin123`
-- Staff: `staff` / `staff123`
-- Student: `student1` / `student123`
+After deploying, run `flask --app run create-admin` in the Render Shell to create an administrator; the password is entered privately and must be at least 12 characters. If the database was previously initialized with demo accounts, run `flask --app run disable-demo-accounts` to deactivate those accounts without deleting their associated data. New student accounts can register through the app.
 
 ## Notes
 
