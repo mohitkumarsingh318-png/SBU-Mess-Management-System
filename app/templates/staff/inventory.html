@@ -1,26 +1,21 @@
 {% extends "base.html" %}
-
 {% block title %}Inventory - Staff Portal{% endblock %}
-
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-box-seam"></i> Inventory Management</h2>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h2 class="mb-0"><i class="bi bi-box-seam"></i> Inventory Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+        <i class="bi bi-plus-circle"></i> Add Inventory Item
+    </button>
+</div>
 
 {% for category, items in inventory_by_category.items() %}
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">{{ category }}</h5>
-    </div>
+    <div class="card-header bg-primary text-white"><h5 class="mb-0">{{ category }}</h5></div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover align-middle">
                 <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Min Threshold</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
+                    <tr><th>Item</th><th>Quantity</th><th>Min Threshold</th><th>Status</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
@@ -29,55 +24,82 @@
                         <td><strong>{{ item.quantity }} {{ item.unit }}</strong></td>
                         <td>{{ item.min_threshold }} {{ item.unit }}</td>
                         <td>
-                            {% if item.is_low_stock() %}
-                            <span class="badge bg-danger">Low Stock</span>
-                            {% else %}
-                            <span class="badge bg-success">In Stock</span>
-                            {% endif %}
+                            {% if item.is_low_stock() %}<span class="badge bg-danger">Low Stock</span>
+                            {% else %}<span class="badge bg-success">In Stock</span>{% endif %}
                         </td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal{{ item.id }}">
-                                <i class="bi bi-pencil"></i> Update
-                            </button>
+                        <td class="text-nowrap">
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#stockModal{{ item.id }}"><i class="bi bi-plus-slash-minus"></i> Stock</button>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItemModal{{ item.id }}"><i class="bi bi-pencil"></i> Edit</button>
+                            <form method="POST" action="{{ url_for('staff.delete_inventory_item', item_id=item.id) }}" class="d-inline" onsubmit="return confirm('Delete {{ item.name }} from inventory?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete {{ item.name }}"><i class="bi bi-trash"></i></button>
+                            </form>
                         </td>
                     </tr>
-                    
-                    <!-- Update Modal -->
-                    <div class="modal fade" id="updateModal{{ item.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Update {{ item.name }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form method="POST" action="{{ url_for('staff.update_inventory', item_id=item.id) }}">
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Action</label>
-                                            <select class="form-select" name="action" required>
-                                                <option value="add">Add Stock</option>
-                                                <option value="remove">Remove Stock</option>
-                                                <option value="set">Set Exact Quantity</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Quantity ({{ item.unit }})</label>
-                                            <input type="number" class="form-control" name="quantity" step="0.01" required>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary">Update</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+{% else %}
+<div class="alert alert-info">No inventory items yet. Add the first item to get started.</div>
+{% endfor %}
+
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('staff.add_inventory_item') }}">
+                <div class="modal-header"><h5 class="modal-title">Add Inventory Item</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <label class="form-label">Name</label><input class="form-control mb-2" name="name" required maxlength="100">
+                    <label class="form-label">Category</label><input class="form-control mb-2" name="category" required maxlength="50">
+                    <label class="form-label">Quantity</label><input class="form-control mb-2" type="number" name="quantity" min="0" step="0.01" required>
+                    <label class="form-label">Unit</label><input class="form-control mb-2" name="unit" placeholder="kg, liters, pieces" required maxlength="20">
+                    <label class="form-label">Minimum threshold</label><input class="form-control mb-2" type="number" name="min_threshold" min="0" step="0.01" value="10" required>
+                    <label class="form-label">Unit price</label><input class="form-control" type="number" name="unit_price" min="0" step="0.01" value="0">
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Add Item</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% for category, items in inventory_by_category.items() %}
+{% for item in items %}
+<div class="modal fade" id="stockModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('staff.update_inventory', item_id=item.id) }}">
+                <div class="modal-header"><h5 class="modal-title">Update {{ item.name }} Stock</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <label class="form-label">Action</label>
+                    <select class="form-select mb-3" name="action" required><option value="add">Add stock</option><option value="remove">Remove stock</option><option value="set">Set exact quantity</option></select>
+                    <label class="form-label">Quantity ({{ item.unit }})</label>
+                    <input type="number" class="form-control" name="quantity" min="0" step="0.01" required>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Update Stock</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editItemModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('staff.edit_inventory_item', item_id=item.id) }}">
+                <div class="modal-header"><h5 class="modal-title">Edit {{ item.name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <label class="form-label">Name</label><input class="form-control mb-2" name="name" value="{{ item.name }}" required maxlength="100">
+                    <label class="form-label">Category</label><input class="form-control mb-2" name="category" value="{{ item.category or '' }}" required maxlength="50">
+                    <label class="form-label">Quantity</label><input class="form-control mb-2" type="number" name="quantity" min="0" step="0.01" value="{{ item.quantity }}" required>
+                    <label class="form-label">Unit</label><input class="form-control mb-2" name="unit" value="{{ item.unit }}" required maxlength="20">
+                    <label class="form-label">Minimum threshold</label><input class="form-control mb-2" type="number" name="min_threshold" min="0" step="0.01" value="{{ item.min_threshold }}" required>
+                    <label class="form-label">Unit price</label><input class="form-control" type="number" name="unit_price" min="0" step="0.01" value="{{ item.unit_price or 0 }}">
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endfor %}
 {% endblock %}

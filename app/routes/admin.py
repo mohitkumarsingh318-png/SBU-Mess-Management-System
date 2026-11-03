@@ -166,6 +166,8 @@ def delete_menu(menu_id):
 def user_management():
     """Manage users"""
     role_filter = request.args.get('role', 'all')
+    if role_filter not in ('all', 'student', 'staff', 'admin'):
+        role_filter = 'all'
     search = request.args.get('search', '')
     
     query = User.query
@@ -191,15 +193,21 @@ def user_management():
 @login_required
 @role_required('admin')
 def add_user():
-    """Add new user (staff or admin)"""
-    username = request.form.get('username')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    full_name = request.form.get('full_name')
-    phone = request.form.get('phone')
-    role = request.form.get('role')
-    
-    # Validation
+    """Add a student or staff account."""
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '')
+    full_name = request.form.get('full_name', '').strip()
+    phone = request.form.get('phone', '').strip()
+    roll_number = request.form.get('roll_number', '').strip() or None
+    role = request.form.get('role', '')
+
+    if role not in ('student', 'staff') or not all((username, email, full_name)):
+        flash('Enter a name, username, email, and a valid student or staff role.', 'danger')
+        return redirect(url_for('admin.user_management'))
+    if len(password) < 6:
+        flash('Password must be at least 6 characters long.', 'danger')
+        return redirect(url_for('admin.user_management'))
     if User.query.filter_by(username=username).first():
         flash('Username already exists.', 'danger')
         return redirect(url_for('admin.user_management'))
@@ -207,12 +215,16 @@ def add_user():
     if User.query.filter_by(email=email).first():
         flash('Email already exists.', 'danger')
         return redirect(url_for('admin.user_management'))
-    
+    if roll_number and User.query.filter_by(roll_number=roll_number).first():
+        flash('Roll number already exists.', 'danger')
+        return redirect(url_for('admin.user_management'))
+
     user = User(
         username=username,
         email=email,
         full_name=full_name,
         phone=phone,
+        roll_number=roll_number,
         role=role
     )
     user.set_password(password)
@@ -223,17 +235,59 @@ def add_user():
     flash(f'{role.capitalize()} user created successfully!', 'success')
     return redirect(url_for('admin.user_management'))
 
-@admin_bp.route('/users/toggle-active/<int:user_id>')
+@admin_bp.route('/users/update/<int:user_id>', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_user(user_id):
+    """Update a student or staff account."""
+    user = User.query.get_or_404(user_id)
+    if user.role not in ('student', 'staff'):
+        flash('Administrator accounts cannot be edited here.', 'warning')
+        return redirect(url_for('admin.user_management'))
+
+    full_name = request.form.get('full_name', '').strip()
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+    roll_number = request.form.get('roll_number', '').strip() or None
+    role = request.form.get('role', '')
+    if not full_name or not email or role not in ('student', 'staff'):
+        flash('Name, email, and a valid role are required.', 'danger')
+        return redirect(url_for('admin.user_management'))
+
+    duplicate_email = User.query.filter(User.email == email, User.id != user.id).first()
+    duplicate_roll = User.query.filter(
+        User.roll_number == roll_number,
+        User.id != user.id
+    ).first() if roll_number else None
+    if duplicate_email:
+        flash('Email already belongs to another account.', 'danger')
+        return redirect(url_for('admin.user_management'))
+    if duplicate_roll:
+        flash('Roll number already belongs to another account.', 'danger')
+        return redirect(url_for('admin.user_management'))
+
+    user.full_name = full_name
+    user.email = email
+    user.phone = phone or None
+    user.roll_number = roll_number
+    user.role = role
+    db.session.commit()
+    flash(f'{role.capitalize()} account updated successfully.', 'success')
+    return redirect(url_for('admin.user_management', role=role))
+
+@admin_bp.route('/users/toggle-active/<int:user_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def toggle_user_active(user_id):
-    """Toggle user active status"""
+    """Toggle user active status."""
     user = User.query.get_or_404(user_id)
-    
+    if user.role not in ('student', 'staff'):
+        flash('Administrator accounts cannot be deactivated here.', 'warning')
+        return redirect(url_for('admin.user_management'))
     if user.id == current_user.id:
         flash('You cannot deactivate your own account.', 'warning')
         return redirect(url_for('admin.user_management'))
-    
+
     user.is_active = not user.is_active
     db.session.commit()
     
@@ -241,17 +295,28 @@ def toggle_user_active(user_id):
     flash(f'User {user.username} {status} successfully!', 'success')
     return redirect(url_for('admin.user_management'))
 
-@admin_bp.route('/users/delete/<int:user_id>')
+@admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def delete_user(user_id):
-    """Delete user"""
+    """Delete an account only when it has no related history."""
     user = User.query.get_or_404(user_id)
-    
-    if user.id == current_user.id:
-        flash('You cannot delete your own account.', 'warning')
+    if user.role not in ('student', 'staff'):
+        flash('Administrator accounts cannot be deleted here.', 'warning')
         return redirect(url_for('admin.user_management'))
-    
+
+    has_history = any((
+        MealBooking.query.filter_by(user_id=user.id).first(),
+        MealBooking.query.filter_by(verified_by=user.id).first(),
+        Payment.query.filter_by(user_id=user.id).first(),
+        Feedback.query.filter_by(user_id=user.id).first(),
+        InventoryItem.query.filter_by(updated_by=user.id).first(),
+        Announcement.query.filter_by(created_by=user.id).first()
+    ))
+    if has_history:
+        flash('This account has booking, payment, or feedback history. Deactivate it to preserve records.', 'warning')
+        return redirect(url_for('admin.user_management', role=user.role))
+
     db.session.delete(user)
     db.session.commit()
     
@@ -424,12 +489,18 @@ def inventory_management():
 @role_required('admin')
 def add_inventory_item():
     """Add inventory item"""
-    name = request.form.get('name')
-    category = request.form.get('category')
-    quantity = float(request.form.get('quantity'))
-    unit = request.form.get('unit')
-    min_threshold = float(request.form.get('min_threshold'))
-    unit_price = float(request.form.get('unit_price', 0))
+    name = request.form.get('name', '').strip()
+    category = request.form.get('category', '').strip()
+    quantity = request.form.get('quantity', type=float)
+    unit = request.form.get('unit', '').strip()
+    min_threshold = request.form.get('min_threshold', type=float)
+    unit_price = request.form.get('unit_price', default=0, type=float)
+    if not name or not category or not unit or quantity is None or min_threshold is None or unit_price is None:
+        flash('Complete all required fields with valid numbers.', 'danger')
+        return redirect(url_for('admin.inventory_management'))
+    if min(quantity, min_threshold, unit_price) < 0:
+        flash('Quantity, threshold, and unit price cannot be negative.', 'danger')
+        return redirect(url_for('admin.inventory_management'))
     
     item = InventoryItem(
         name=name,
@@ -453,13 +524,26 @@ def add_inventory_item():
 def update_inventory_item(item_id):
     """Update inventory item"""
     item = InventoryItem.query.get_or_404(item_id)
-    
-    item.name = request.form.get('name')
-    item.category = request.form.get('category')
-    item.quantity = float(request.form.get('quantity'))
-    item.unit = request.form.get('unit')
-    item.min_threshold = float(request.form.get('min_threshold'))
-    item.unit_price = float(request.form.get('unit_price', 0))
+
+    name = request.form.get('name', '').strip()
+    category = request.form.get('category', '').strip()
+    quantity = request.form.get('quantity', type=float)
+    unit = request.form.get('unit', '').strip()
+    min_threshold = request.form.get('min_threshold', type=float)
+    unit_price = request.form.get('unit_price', default=0, type=float)
+    if not name or not category or not unit or quantity is None or min_threshold is None or unit_price is None:
+        flash('Complete all required fields with valid numbers.', 'danger')
+        return redirect(url_for('admin.inventory_management'))
+    if min(quantity, min_threshold, unit_price) < 0:
+        flash('Quantity, threshold, and unit price cannot be negative.', 'danger')
+        return redirect(url_for('admin.inventory_management'))
+
+    item.name = name
+    item.category = category
+    item.quantity = quantity
+    item.unit = unit
+    item.min_threshold = min_threshold
+    item.unit_price = unit_price
     item.updated_by = current_user.id
     item.last_updated = datetime.utcnow()
     
@@ -468,7 +552,7 @@ def update_inventory_item(item_id):
     flash('Inventory item updated successfully!', 'success')
     return redirect(url_for('admin.inventory_management'))
 
-@admin_bp.route('/inventory/delete/<int:item_id>')
+@admin_bp.route('/inventory/delete/<int:item_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def delete_inventory_item(item_id):

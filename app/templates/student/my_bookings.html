@@ -47,11 +47,12 @@
                         </td>
                         <td>
                             {% if booking.status == 'booked' and booking.booking_date > today %}
-                            <a href="{{ url_for('student.cancel_booking', booking_id=booking.id) }}" 
-                               class="btn btn-sm btn-danger"
-                               onclick="return confirm('Are you sure you want to cancel this booking?')">
-                                <i class="bi bi-x-circle"></i> Cancel
-                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookingModal{{ booking.id }}">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <form method="POST" action="{{ url_for('student.cancel_booking', booking_id=booking.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-x-circle"></i> Cancel</button>
+                            </form>
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}
@@ -89,6 +90,37 @@
         {% endif %}
     </div>
 </div>
+
+{% for booking in bookings.items %}
+{% if booking.status == 'booked' and booking.booking_date > today %}
+<div class="modal fade" id="editBookingModal{{ booking.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('student.update_booking', booking_id=booking.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Meal Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="booking_date{{ booking.id }}">Date</label>
+                    <input type="date" class="form-control mb-3" id="booking_date{{ booking.id }}" name="booking_date" min="{{ tomorrow.strftime('%Y-%m-%d') }}" value="{{ booking.booking_date.strftime('%Y-%m-%d') }}" required>
+                    <label class="form-label" for="meal_type{{ booking.id }}">Meal</label>
+                    <select class="form-select" id="meal_type{{ booking.id }}" name="meal_type" required>
+                        <option value="breakfast" {{ 'selected' if booking.meal_type == 'breakfast' else '' }}>Breakfast (₹30)</option>
+                        <option value="lunch" {{ 'selected' if booking.meal_type == 'lunch' else '' }}>Lunch (₹50)</option>
+                        <option value="dinner" {{ 'selected' if booking.meal_type == 'dinner' else '' }}>Dinner (₹45)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
 
 <!-- QR Code Modals -->
 {% for booking in bookings.items %}

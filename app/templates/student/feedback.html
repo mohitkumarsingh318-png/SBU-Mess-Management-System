@@ -1,91 +1,96 @@
 {% extends "base.html" %}
-
 {% block title %}Feedback - Mess Management System{% endblock %}
-
 {% block content %}
 <h2 class="mb-4"><i class="bi bi-chat-left-text"></i> Feedback & Complaints</h2>
 
 <div class="row">
     <div class="col-md-5 mb-4">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Submit Feedback</h5>
-            </div>
+            <div class="card-header bg-primary text-white"><h5 class="mb-0">Submit Feedback</h5></div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('student.feedback') }}">
                     <div class="mb-3">
                         <label for="feedback_type" class="form-label">Type</label>
                         <select class="form-select" id="feedback_type" name="feedback_type" required>
-                            <option value="complaint">Complaint</option>
-                            <option value="suggestion">Suggestion</option>
-                            <option value="rating">Rating</option>
+                            <option value="complaint">Complaint</option><option value="suggestion">Suggestion</option><option value="rating">Rating</option>
                         </select>
                     </div>
-                    
+                    <div class="mb-3"><label for="subject" class="form-label">Subject</label><input class="form-control" id="subject" name="subject" maxlength="200" required></div>
+                    <div class="mb-3"><label for="message" class="form-label">Message</label><textarea class="form-control" id="message" name="message" rows="4" required></textarea></div>
                     <div class="mb-3">
-                        <label for="subject" class="form-label">Subject</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message</label>
-                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="rating" class="form-label">Rating (1-5)</label>
+                        <label for="rating" class="form-label">Rating (optional)</label>
                         <select class="form-select" id="rating" name="rating">
-                            <option value="">No rating</option>
-                            <option value="1">1 - Very Poor</option>
-                            <option value="2">2 - Poor</option>
-                            <option value="3">3 - Average</option>
-                            <option value="4">4 - Good</option>
-                            <option value="5">5 - Excellent</option>
+                            <option value="">No rating</option><option value="1">1 - Very Poor</option><option value="2">2 - Poor</option><option value="3">3 - Average</option><option value="4">4 - Good</option><option value="5">5 - Excellent</option>
                         </select>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-send"></i> Submit Feedback
-                    </button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send"></i> Submit Feedback</button>
                 </form>
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-7">
         <div class="card shadow-sm">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">My Feedback History</h5>
-            </div>
+            <div class="card-header bg-info text-white"><h5 class="mb-0">My Feedback History</h5></div>
             <div class="card-body">
                 {% if feedbacks.items %}
-                    {% for feedback in feedbacks.items %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h6>{{ feedback.subject }}</h6>
-                                <span class="badge bg-{{ 'success' if feedback.status == 'resolved' else 'warning' }}">
-                                    {{ feedback.status }}
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-2">{{ feedback.created_at.strftime('%d %b, %Y') }}</p>
-                            <p class="mb-2">{{ feedback.message }}</p>
-                            {% if feedback.rating %}
-                            <p class="mb-2"><strong>Rating:</strong> {{ feedback.rating }}/5</p>
-                            {% endif %}
-                            {% if feedback.admin_response %}
-                            <div class="alert alert-success mb-0">
-                                <strong>Admin Response:</strong> {{ feedback.admin_response }}
-                            </div>
-                            {% endif %}
+                {% for feedback in feedbacks.items %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <h6>{{ feedback.subject }}</h6>
+                            <span class="badge bg-{{ 'success' if feedback.status == 'resolved' else 'warning' if feedback.status == 'pending' else 'secondary' }}">{{ feedback.status|title }}</span>
                         </div>
+                        <p class="text-muted small mb-2">{{ feedback.created_at.strftime('%d %b, %Y') }} · {{ feedback.feedback_type|title }}</p>
+                        <p class="mb-2">{{ feedback.message }}</p>
+                        {% if feedback.rating %}<p class="mb-2"><strong>Rating:</strong> {{ feedback.rating }}/5</p>{% endif %}
+                        {% if feedback.admin_response %}<div class="alert alert-success mb-2"><strong>Admin response:</strong> {{ feedback.admin_response }}</div>{% endif %}
+                        {% if feedback.status == 'pending' %}
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editFeedbackModal{{ feedback.id }}"><i class="bi bi-pencil"></i> Edit</button>
+                        <form method="POST" action="{{ url_for('student.delete_feedback', feedback_id=feedback.id) }}" class="d-inline" onsubmit="return confirm('Delete this pending feedback?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                        </form>
+                        {% endif %}
                     </div>
-                    {% endfor %}
+                </div>
+                {% endfor %}
                 {% else %}
-                    <p class="text-muted text-center">No feedback submitted yet.</p>
+                <p class="text-muted text-center">No feedback submitted yet.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+{% for feedback in feedbacks.items %}
+{% if feedback.status == 'pending' %}
+<div class="modal fade" id="editFeedbackModal{{ feedback.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('student.update_feedback', feedback_id=feedback.id) }}">
+                <div class="modal-header"><h5 class="modal-title">Edit Feedback</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <label class="form-label" for="type{{ feedback.id }}">Type</label>
+                    <select class="form-select mb-2" id="type{{ feedback.id }}" name="feedback_type" required>
+                        <option value="complaint" {{ 'selected' if feedback.feedback_type == 'complaint' else '' }}>Complaint</option>
+                        <option value="suggestion" {{ 'selected' if feedback.feedback_type == 'suggestion' else '' }}>Suggestion</option>
+                        <option value="rating" {{ 'selected' if feedback.feedback_type == 'rating' else '' }}>Rating</option>
+                    </select>
+                    <label class="form-label" for="subject{{ feedback.id }}">Subject</label>
+                    <input class="form-control mb-2" id="subject{{ feedback.id }}" name="subject" value="{{ feedback.subject }}" maxlength="200" required>
+                    <label class="form-label" for="message{{ feedback.id }}">Message</label>
+                    <textarea class="form-control mb-2" id="message{{ feedback.id }}" name="message" rows="4" required>{{ feedback.message }}</textarea>
+                    <label class="form-label" for="rating{{ feedback.id }}">Rating</label>
+                    <select class="form-select" id="rating{{ feedback.id }}" name="rating">
+                        <option value="" {{ 'selected' if not feedback.rating else '' }}>No rating</option>
+                        {% for value in range(1, 6) %}<option value="{{ value }}" {{ 'selected' if feedback.rating == value else '' }}>{{ value }} / 5</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
 {% endblock %}

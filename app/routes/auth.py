@@ -45,8 +45,9 @@ def login():
             return redirect(url_for('student.dashboard'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('username', '').strip()
         password = request.form.get('password')
+        selected_role = request.form.get('role', '').strip()
         
         user = User.query.filter_by(username=username).first()
         
@@ -54,6 +55,12 @@ def login():
             if not user.is_active:
                 flash('Your account has been deactivated. Please contact admin.', 'danger')
                 return redirect(url_for('auth.login'))
+            if selected_role and selected_role not in ('admin', 'staff', 'student'):
+                flash('Choose a valid account type.', 'danger')
+                return render_template('auth/login.html', selected_role=selected_role)
+            if selected_role and selected_role != user.role:
+                flash(f'This account is registered as {user.role.title()}. Select the correct account type and try again.', 'danger')
+                return render_template('auth/login.html', selected_role=selected_role)
             
             login_user(user)
             flash(f'Welcome back, {user.full_name}!', 'success')
@@ -68,7 +75,7 @@ def login():
         else:
             flash('Invalid username or password.', 'danger')
     
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', selected_role='')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -139,9 +146,12 @@ def profile():
 @login_required
 def update_profile():
     """Update user profile"""
-    full_name = request.form.get('full_name')
-    phone = request.form.get('phone')
-    email = request.form.get('email')
+    full_name = request.form.get('full_name', '').strip()
+    phone = request.form.get('phone', '').strip()
+    email = request.form.get('email', '').strip()
+    if not full_name or not email:
+        flash('Full name and email are required.', 'danger')
+        return redirect(url_for('auth.profile'))
     
     # Check if email is already taken by another user
     existing_user = User.query.filter_by(email=email).first()

@@ -66,8 +66,13 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.menu_management') }}"><i class="bi bi-calendar-week"></i> Menu</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.user_management') }}"><i class="bi bi-people"></i> Users</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-people"></i> Accounts</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.user_management') }}">All Accounts</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.user_management', role='staff') }}">Staff</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.user_management', role='student') }}">Students</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.bookings') }}"><i class="bi bi-list-ul"></i> Bookings</a>
@@ -93,6 +98,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i> {{ current_user.full_name }}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">{{ current_user.role|upper }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person"></i> Profile</a></li>

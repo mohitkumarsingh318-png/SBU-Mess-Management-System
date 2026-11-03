@@ -6,13 +6,14 @@ A digital mess management system that streamlines meal booking, menu planning, i
 
 The Mess Management System replaces manual mess operations with a modern web application.
 
-- Students can book meals, view menus, track payments, and submit feedback.
-- Staff can verify meals, monitor meal counts, and manage inventory.
-- Admins can create menus, manage users, view reports, and oversee system operations.
+- Students can view menus and payments, manage their own future meal bookings, edit or remove pending feedback, and update their profiles.
+- Staff can verify meals, monitor meal counts, and create, view, edit, and delete inventory items or adjust stock.
+- Admins can create, view, edit, activate/deactivate, and delete student and staff accounts, create menus, manage inventory, view reports, and oversee system operations.
 
 ## Key Features
 
 - Multi-role access: student, staff, and admin dashboards
+- Role-based CRUD panels with ownership checks for student records
 - Meal booking and verification
 - Weekly menu management
 - Payment tracking and reporting

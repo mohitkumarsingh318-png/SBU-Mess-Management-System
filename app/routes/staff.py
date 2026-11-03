@@ -156,10 +156,13 @@ def inventory():
 def update_inventory(item_id):
     """Update inventory item quantity"""
     item = InventoryItem.query.get_or_404(item_id)
-    
+
     action = request.form.get('action')
-    quantity = float(request.form.get('quantity', 0))
-    
+    quantity = request.form.get('quantity', type=float)
+    if quantity is None or quantity < 0:
+        flash('Enter a valid non-negative quantity.', 'danger')
+        return redirect(url_for('staff.inventory'))
+
     if action == 'add':
         item.quantity += quantity
         flash(f'Added {quantity} {item.unit} to {item.name}', 'success')
@@ -172,12 +175,91 @@ def update_inventory(item_id):
     elif action == 'set':
         item.quantity = quantity
         flash(f'Set {item.name} quantity to {quantity} {item.unit}', 'success')
-    
+    else:
+        flash('Choose a valid stock action.', 'danger')
+        return redirect(url_for('staff.inventory'))
+
     item.last_updated = datetime.utcnow()
     item.updated_by = current_user.id
     
     db.session.commit()
-    
+
+    return redirect(url_for('staff.inventory'))
+
+@staff_bp.route('/inventory/add', methods=['POST'])
+@login_required
+@role_required('staff')
+def add_inventory_item():
+    """Create an inventory item."""
+    name = request.form.get('name', '').strip()
+    category = request.form.get('category', '').strip()
+    unit = request.form.get('unit', '').strip()
+    quantity = request.form.get('quantity', type=float)
+    min_threshold = request.form.get('min_threshold', type=float)
+    unit_price = request.form.get('unit_price', default=0, type=float)
+
+    if not name or not category or not unit or quantity is None or min_threshold is None or unit_price is None:
+        flash('Complete all required fields with valid numbers.', 'danger')
+        return redirect(url_for('staff.inventory'))
+    if min(quantity, min_threshold, unit_price) < 0:
+        flash('Quantity, threshold, and unit price cannot be negative.', 'danger')
+        return redirect(url_for('staff.inventory'))
+
+    item = InventoryItem(
+        name=name,
+        category=category,
+        quantity=quantity,
+        unit=unit,
+        min_threshold=min_threshold,
+        unit_price=unit_price,
+        updated_by=current_user.id
+    )
+    db.session.add(item)
+    db.session.commit()
+    flash('Inventory item added successfully.', 'success')
+    return redirect(url_for('staff.inventory'))
+
+@staff_bp.route('/inventory/edit/<int:item_id>', methods=['POST'])
+@login_required
+@role_required('staff')
+def edit_inventory_item(item_id):
+    """Edit inventory item details."""
+    item = InventoryItem.query.get_or_404(item_id)
+    name = request.form.get('name', '').strip()
+    category = request.form.get('category', '').strip()
+    unit = request.form.get('unit', '').strip()
+    quantity = request.form.get('quantity', type=float)
+    min_threshold = request.form.get('min_threshold', type=float)
+    unit_price = request.form.get('unit_price', default=0, type=float)
+
+    if not name or not category or not unit or quantity is None or min_threshold is None or unit_price is None:
+        flash('Complete all required fields with valid numbers.', 'danger')
+        return redirect(url_for('staff.inventory'))
+    if min(quantity, min_threshold, unit_price) < 0:
+        flash('Quantity, threshold, and unit price cannot be negative.', 'danger')
+        return redirect(url_for('staff.inventory'))
+
+    item.name = name
+    item.category = category
+    item.unit = unit
+    item.quantity = quantity
+    item.min_threshold = min_threshold
+    item.unit_price = unit_price
+    item.last_updated = datetime.utcnow()
+    item.updated_by = current_user.id
+    db.session.commit()
+    flash('Inventory item updated successfully.', 'success')
+    return redirect(url_for('staff.inventory'))
+
+@staff_bp.route('/inventory/delete/<int:item_id>', methods=['POST'])
+@login_required
+@role_required('staff')
+def delete_inventory_item(item_id):
+    """Delete an inventory item."""
+    item = InventoryItem.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Inventory item deleted successfully.', 'success')
     return redirect(url_for('staff.inventory'))
 
 @staff_bp.route('/announcements')

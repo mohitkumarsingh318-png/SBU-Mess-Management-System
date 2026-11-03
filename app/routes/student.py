@@ -8,6 +8,7 @@ from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
 student_bp = Blueprint('student', __name__)
+MEAL_PRICES = {'breakfast': 30.0, 'lunch': 50.0, 'dinner': 45.0}
 
 @student_bp.route('/dashboard')
 @login_required
@@ -101,14 +102,20 @@ def view_menu():
 def book_meal():
     """Book a meal"""
     if request.method == 'POST':
-        booking_date_str = request.form.get('booking_date')
-        meal_type = request.form.get('meal_type')
-        
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
+        booking_date_str = request.form.get('booking_date', '')
+        meal_type = request.form.get('meal_type', '')
+        try:
+            booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Choose a valid booking date.', 'danger')
+            return redirect(url_for('student.book_meal'))
         
         # Validation
         if booking_date < date.today():
             flash('Cannot book meals for past dates.', 'danger')
+            return redirect(url_for('student.book_meal'))
+        if meal_type not in MEAL_PRICES:
+            flash('Choose a valid meal type.', 'danger')
             return redirect(url_for('student.book_meal'))
         
         # Check for duplicate booking
@@ -126,9 +133,6 @@ def book_meal():
         menu = Menu.query.filter_by(date=booking_date, meal_type=meal_type).first()
         
         # Default prices
-        prices = {'breakfast': 30.0, 'lunch': 50.0, 'dinner': 45.0}
-        price = prices.get(meal_type, 40.0)
-        
         # Create booking
         booking = MealBooking(
             user_id=current_user.id,
@@ -136,7 +140,7 @@ def book_meal():
             booking_date=booking_date,
             meal_type=meal_type,
             status='booked',
-            price=price
+            price=MEAL_PRICES[meal_type]
         )
         booking.generate_token()
         
@@ -183,9 +187,58 @@ def my_bookings():
         else:
             booking.qr_code = None
     
-    return render_template('student/my_bookings.html', bookings=bookings, today=today)
+    return render_template(
+        'student/my_bookings.html',
+        bookings=bookings,
+        today=today,
+        tomorrow=today + timedelta(days=1)
+    )
 
-@student_bp.route('/cancel-booking/<int:booking_id>')
+@student_bp.route('/booking/<int:booking_id>/update', methods=['POST'])
+@login_required
+@role_required('student')
+def update_booking(booking_id):
+    """Update an upcoming booking owned by the current student."""
+    booking = MealBooking.query.get_or_404(booking_id)
+    if booking.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('student.my_bookings'))
+    if booking.status != 'booked' or booking.booking_date <= date.today():
+        flash('Only future booked meals can be edited.', 'warning')
+        return redirect(url_for('student.my_bookings'))
+
+    booking_date_str = request.form.get('booking_date', '')
+    meal_type = request.form.get('meal_type', '')
+    try:
+        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Choose a valid booking date.', 'danger')
+        return redirect(url_for('student.my_bookings'))
+    if booking_date <= date.today() or meal_type not in MEAL_PRICES:
+        flash('Choose a future date and a valid meal type.', 'danger')
+        return redirect(url_for('student.my_bookings'))
+
+    duplicate = MealBooking.query.filter(
+        MealBooking.user_id == current_user.id,
+        MealBooking.booking_date == booking_date,
+        MealBooking.meal_type == meal_type,
+        MealBooking.status.in_(['booked', 'consumed']),
+        MealBooking.id != booking.id
+    ).first()
+    if duplicate:
+        flash('You already have this meal booked for that date.', 'warning')
+        return redirect(url_for('student.my_bookings'))
+
+    menu = Menu.query.filter_by(date=booking_date, meal_type=meal_type).first()
+    booking.booking_date = booking_date
+    booking.meal_type = meal_type
+    booking.menu_id = menu.id if menu else None
+    booking.price = MEAL_PRICES[meal_type]
+    db.session.commit()
+    flash('Booking updated successfully.', 'success')
+    return redirect(url_for('student.my_bookings'))
+
+@student_bp.route('/cancel-booking/<int:booking_id>', methods=['POST'])
 @login_required
 @role_required('student')
 def cancel_booking(booking_id):
@@ -249,10 +302,15 @@ def payments():
 def feedback():
     """Submit feedback or view feedback history"""
     if request.method == 'POST':
-        feedback_type = request.form.get('feedback_type')
-        subject = request.form.get('subject')
-        message = request.form.get('message')
+        feedback_type = request.form.get('feedback_type', '')
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
         rating = request.form.get('rating', type=int)
+        rating_value = request.form.get('rating', '')
+        if (feedback_type not in ('complaint', 'suggestion', 'rating') or not subject or not message
+                or (rating_value and (rating is None or not 1 <= rating <= 5))):
+            flash('Enter a subject and message, choose a valid type, and use a rating from 1 to 5.', 'danger')
+            return redirect(url_for('student.feedback'))
         
         new_feedback = Feedback(
             user_id=current_user.id,
@@ -277,6 +335,55 @@ def feedback():
         .paginate(page=page, per_page=10, error_out=False)
     
     return render_template('student/feedback.html', feedbacks=feedbacks)
+
+@student_bp.route('/feedback/<int:feedback_id>/update', methods=['POST'])
+@login_required
+@role_required('student')
+def update_feedback(feedback_id):
+    """Edit feedback while it is still pending review."""
+    feedback_item = Feedback.query.get_or_404(feedback_id)
+    if feedback_item.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('student.feedback'))
+    if feedback_item.status != 'pending':
+        flash('Feedback can no longer be edited after it has been reviewed.', 'warning')
+        return redirect(url_for('student.feedback'))
+
+    feedback_type = request.form.get('feedback_type', '')
+    subject = request.form.get('subject', '').strip()
+    message = request.form.get('message', '').strip()
+    rating = request.form.get('rating', type=int)
+    rating_value = request.form.get('rating', '')
+    if (feedback_type not in ('complaint', 'suggestion', 'rating') or not subject or not message
+            or (rating_value and (rating is None or not 1 <= rating <= 5))):
+        flash('Enter a subject and message, choose a valid type, and use a rating from 1 to 5.', 'danger')
+        return redirect(url_for('student.feedback'))
+
+    feedback_item.feedback_type = feedback_type
+    feedback_item.subject = subject
+    feedback_item.message = message
+    feedback_item.rating = rating
+    db.session.commit()
+    flash('Feedback updated successfully.', 'success')
+    return redirect(url_for('student.feedback'))
+
+@student_bp.route('/feedback/<int:feedback_id>/delete', methods=['POST'])
+@login_required
+@role_required('student')
+def delete_feedback(feedback_id):
+    """Delete feedback owned by the current student while pending."""
+    feedback_item = Feedback.query.get_or_404(feedback_id)
+    if feedback_item.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('student.feedback'))
+    if feedback_item.status != 'pending':
+        flash('Reviewed feedback cannot be deleted.', 'warning')
+        return redirect(url_for('student.feedback'))
+
+    db.session.delete(feedback_item)
+    db.session.commit()
+    flash('Feedback deleted successfully.', 'success')
+    return redirect(url_for('student.feedback'))
 
 @student_bp.route('/announcements')
 @login_required

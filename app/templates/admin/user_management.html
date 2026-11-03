@@ -1,64 +1,141 @@
 {% extends "base.html" %}
-{% block title %}User Management - Admin{% endblock %}
+{% block title %}Account Management - Admin{% endblock %}
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-people"></i> User Management</h2>
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
-    <i class="bi bi-person-plus"></i> Add User
-</button>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="mb-0"><i class="bi bi-people"></i> Account Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="bi bi-person-plus"></i> Add {{ 'Student' if role_filter == 'student' else 'Staff' if role_filter == 'staff' else 'Account' }}
+    </button>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link {{ 'active' if role_filter == 'all' else '' }}" href="{{ url_for('admin.user_management', role='all') }}">All Accounts</a></li>
+    <li class="nav-item"><a class="nav-link {{ 'active' if role_filter == 'staff' else '' }}" href="{{ url_for('admin.user_management', role='staff') }}">Staff</a></li>
+    <li class="nav-item"><a class="nav-link {{ 'active' if role_filter == 'student' else '' }}" href="{{ url_for('admin.user_management', role='student') }}">Students</a></li>
+</ul>
+
+<form method="GET" class="row g-2 mb-3">
+    <input type="hidden" name="role" value="{{ role_filter }}">
+    <div class="col-sm-8 col-md-5">
+        <input class="form-control" type="search" name="search" value="{{ search }}" placeholder="Search name, username, email, or roll number">
+    </div>
+    <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i> Search</button></div>
+    {% if search %}<div class="col-auto"><a class="btn btn-outline-secondary" href="{{ url_for('admin.user_management', role=role_filter) }}">Clear</a></div>{% endif %}
+</form>
+
 <div class="card shadow-sm">
     <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr><th>Name</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.full_name }}</td>
-                    <td>{{ user.username }}</td>
-                    <td><span class="badge bg-primary">{{ user.role }}</span></td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                        {% if user.is_active %}
-                        <span class="badge bg-success">Active</span>
-                        {% else %}
-                        <span class="badge bg-secondary">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" class="btn btn-sm btn-warning">Toggle</a>
-                        <a href="{{ url_for('admin.delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">Delete</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr><th>Name</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.full_name }}{% if user.roll_number %}<div class="small text-muted">Roll: {{ user.roll_number }}</div>{% endif %}</td>
+                        <td>{{ user.username }}</td>
+                        <td><span class="badge bg-primary">{{ user.role|title }}</span></td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
+                        <td class="text-nowrap">
+                            {% if user.role in ['student', 'staff'] %}
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}" aria-label="Edit {{ user.username }}">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" class="d-inline">
+                                <button class="btn btn-sm btn-outline-warning" type="submit">{{ 'Deactivate' if user.is_active else 'Activate' }}</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" class="d-inline" onsubmit="return confirm('Delete this account? Accounts with history must be deactivated instead.')">
+                                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">Admin account</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No accounts match this view.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<div class="modal fade" id="addUserModal" tabindex="-1">
+
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('admin.add_user') }}">
                 <div class="modal-header">
-                    <h5>Add User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" class="form-control mb-2" name="full_name" placeholder="Full Name" required>
-                    <input type="text" class="form-control mb-2" name="username" placeholder="Username" required>
-                    <input type="email" class="form-control mb-2" name="email" placeholder="Email" required>
-                    <input type="password" class="form-control mb-2" name="password" placeholder="Password" required>
-                    <input type="tel" class="form-control mb-2" name="phone" placeholder="Phone">
-                    <select class="form-select" name="role" required>
+                    <input type="hidden" name="return_role" value="{{ role_filter }}">
+                    <label class="form-label" for="new_full_name">Full name</label>
+                    <input id="new_full_name" type="text" class="form-control mb-2" name="full_name" required maxlength="120">
+                    <label class="form-label" for="new_username">Username</label>
+                    <input id="new_username" type="text" class="form-control mb-2" name="username" required maxlength="80">
+                    <label class="form-label" for="new_email">Email</label>
+                    <input id="new_email" type="email" class="form-control mb-2" name="email" required maxlength="120">
+                    <label class="form-label" for="new_password">Temporary password</label>
+                    <input id="new_password" type="password" class="form-control mb-2" name="password" required minlength="6" autocomplete="new-password">
+                    <label class="form-label" for="new_phone">Phone</label>
+                    <input id="new_phone" type="tel" class="form-control mb-2" name="phone">
+                    <label class="form-label" for="new_roll_number">Student roll number (optional)</label>
+                    <input id="new_roll_number" type="text" class="form-control mb-2" name="roll_number">
+                    {% if role_filter in ['student', 'staff'] %}
+                    <input type="hidden" name="role" value="{{ role_filter }}">
+                    <div class="form-control-plaintext">Role: <strong>{{ role_filter|title }}</strong></div>
+                    {% else %}
+                    <label class="form-label" for="new_role">Role</label>
+                    <select id="new_role" class="form-select" name="role" required>
                         <option value="staff">Staff</option>
-                        <option value="admin">Admin</option>
+                        <option value="student">Student</option>
                     </select>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add User</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+{% for user in users if user.role in ['student', 'staff'] %}
+<div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.update_user', user_id=user.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit {{ user.full_name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="full_name{{ user.id }}">Full name</label>
+                    <input id="full_name{{ user.id }}" class="form-control mb-2" name="full_name" value="{{ user.full_name }}" required maxlength="120">
+                    <label class="form-label" for="email{{ user.id }}">Email</label>
+                    <input id="email{{ user.id }}" type="email" class="form-control mb-2" name="email" value="{{ user.email }}" required maxlength="120">
+                    <label class="form-label" for="phone{{ user.id }}">Phone</label>
+                    <input id="phone{{ user.id }}" class="form-control mb-2" name="phone" value="{{ user.phone or '' }}">
+                    <label class="form-label" for="roll_number{{ user.id }}">Student roll number</label>
+                    <input id="roll_number{{ user.id }}" class="form-control mb-2" name="roll_number" value="{{ user.roll_number or '' }}">
+                    <label class="form-label" for="role{{ user.id }}">Role</label>
+                    <select id="role{{ user.id }}" class="form-select" name="role" required>
+                        <option value="student" {{ 'selected' if user.role == 'student' else '' }}>Student</option>
+                        <option value="staff" {{ 'selected' if user.role == 'staff' else '' }}>Staff</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

@@ -10,8 +10,19 @@
                 <h2 class="card-title text-center mb-4">
                     <i class="bi bi-box-arrow-in-right text-primary"></i> Login
                 </h2>
+                <p class="text-muted text-center mb-4">Choose your account type to open the correct panel.</p>
                 
                 <form method="POST" action="{{ url_for('auth.login') }}">
+                    <div class="mb-3">
+                        <label for="role" class="form-label">I am logging in as</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="" disabled {{ 'selected' if not selected_role else '' }}>Select Admin, Staff, or Student</option>
+                            <option value="admin" {{ 'selected' if selected_role == 'admin' else '' }}>Admin</option>
+                            <option value="staff" {{ 'selected' if selected_role == 'staff' else '' }}>Staff</option>
+                            <option value="student" {{ 'selected' if selected_role == 'student' else '' }}>Student</option>
+                        </select>
+                        <div class="form-text">Your selection must match the role assigned to your account.</div>
+                    </div>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required autofocus>
