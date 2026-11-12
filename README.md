@@ -59,7 +59,9 @@ The Mess Management System replaces manual mess operations with a modern web app
 
 The `.python-version` file pins the Render runtime to Python 3.12.8 for compatibility with the dependencies. Use `pip install -r requirements.txt` as the build command and `gunicorn run:app --bind 0.0.0.0:$PORT` as the start command.
 
-Create a Render PostgreSQL database in the same region as the web service. Copy its internal connection URL into the web service's `DATABASE_URL` environment variable, then redeploy. The app creates missing tables on startup. Run `flask --app run create-admin` in the Render Shell to create an administrator; the password is entered privately and must be at least 12 characters. If the database was previously initialized with demo accounts, run `flask --app run disable-demo-accounts` to deactivate those accounts without deleting their associated data. New student accounts can register through the app.
+Create a Render PostgreSQL database in the same region as the web service. Copy its internal connection URL into the web service's `DATABASE_URL` environment variable, then redeploy. The app creates missing tables on startup.
+
+To create the first administrator on Render's free plan (which does not include Shell access), temporarily set `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_FULL_NAME`, and `ADMIN_PASSWORD` in the web service's Environment settings. Use a password with at least 12 characters. After the next successful deploy, remove all four `ADMIN_*` variables and redeploy; the account remains in PostgreSQL. Never put these credentials in source code or share them in logs. On plans with Shell access, you can instead run `flask --app run create-admin`. If the database was previously initialized with demo accounts, run `flask --app run disable-demo-accounts` to deactivate those accounts without deleting their associated data. New student accounts can register through the app.
 
 ## Notes
 
