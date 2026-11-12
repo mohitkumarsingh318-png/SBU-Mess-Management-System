@@ -30,11 +30,16 @@ def dashboard():
     # Calculate current month's dues
     current_month = today.strftime('%B')
     current_year = today.year
+    month_start = today.replace(day=1)
+    if today.month == 12:
+        next_month_start = date(today.year + 1, 1, 1)
+    else:
+        next_month_start = date(today.year, today.month + 1, 1)
     
     total_bookings = MealBooking.query.filter(
         MealBooking.user_id == current_user.id,
-        func.strftime('%Y', MealBooking.booking_date) == str(current_year),
-        func.strftime('%m', MealBooking.booking_date) == today.strftime('%m'),
+        MealBooking.booking_date >= month_start,
+        MealBooking.booking_date < next_month_start,
         MealBooking.status.in_(['booked', 'consumed'])
     ).all()
     
