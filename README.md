@@ -26,7 +26,7 @@ The Mess Management System replaces manual mess operations with a modern web app
 ## Technology Stack
 
 - Backend: Flask (Python)
-- Database: SQLAlchemy with SQLite for local development or MySQL for deployment
+- Database: SQLAlchemy with SQLite for local development or PostgreSQL for deployment
 - Frontend: HTML5, CSS3, Bootstrap 5, JavaScript
 - ORM: SQLAlchemy
 
@@ -41,11 +41,11 @@ The Mess Management System replaces manual mess operations with a modern web app
    ```powershell
    pip install -r requirements.txt
    ```
-4. Copy `.env.example` to `.env`. To use MySQL, first create a database with your database provider, then set the connection URL in `.env`:
+4. To use PostgreSQL, create a database with your provider, then set its connection URL in `.env`:
    ```text
-   DATABASE_URL=mysql+pymysql://username:password@host:3306/database_name
+   DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE_NAME
    ```
-   Replace the placeholders with the values from your MySQL provider. URL-encode special characters in the password. Keep `.env` private; for Render, configure `DATABASE_URL` as a service environment variable and allow the app host to connect to the database. If `DATABASE_URL` is unset, the app uses its local SQLite database.
+   Replace the placeholders with the values from your PostgreSQL provider and URL-encode special characters in the password. Keep `.env` private. Render-provided `postgres://` and `postgresql://` URLs are supported. If `DATABASE_URL` is unset, the app uses its local SQLite database.
 5. Run the application:
    ```powershell
    python run.py
@@ -59,13 +59,13 @@ The Mess Management System replaces manual mess operations with a modern web app
 
 The `.python-version` file pins the Render runtime to Python 3.12.8 for compatibility with the dependencies. Use `pip install -r requirements.txt` as the build command and `gunicorn run:app --bind 0.0.0.0:$PORT` as the start command.
 
-After deploying, run `flask --app run create-admin` in the Render Shell to create an administrator; the password is entered privately and must be at least 12 characters. If the database was previously initialized with demo accounts, run `flask --app run disable-demo-accounts` to deactivate those accounts without deleting their associated data. New student accounts can register through the app.
+Create a Render PostgreSQL database in the same region as the web service. Copy its internal connection URL into the web service's `DATABASE_URL` environment variable, then redeploy. The app creates missing tables on startup. Run `flask --app run create-admin` in the Render Shell to create an administrator; the password is entered privately and must be at least 12 characters. If the database was previously initialized with demo accounts, run `flask --app run disable-demo-accounts` to deactivate those accounts without deleting their associated data. New student accounts can register through the app.
 
 ## Notes
 
 - The repository already ignores environment files such as `.env` and `.env.*`.
 - Use `.env` for sensitive credentials and do not commit secret values to Git.
-- The app creates missing tables on startup, but switching from SQLite to MySQL does not copy existing records. Back up or migrate any data you need to keep.
+- The app creates missing tables on startup, but switching from SQLite to PostgreSQL does not copy existing records.
 
 ## Documentation
 
