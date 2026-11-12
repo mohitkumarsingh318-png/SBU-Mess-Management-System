@@ -35,19 +35,22 @@ def index():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """User login"""
+    """Log in an admin, staff member, or student."""
     if current_user.is_authenticated:
         if current_user.role == 'admin':
             return redirect(url_for('admin.dashboard'))
         elif current_user.role == 'staff':
             return redirect(url_for('staff.dashboard'))
         else:
-            return redirect(url_for('student.dashboard'))
+            logout_user()
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password')
         selected_role = request.form.get('role', '').strip()
+        if selected_role not in ('admin', 'staff', 'student'):
+            flash('Choose Admin, Staff, or Student to log in.', 'danger')
+            return render_template('auth/login.html', selected_role='')
         
         user = User.query.filter_by(username=username).first()
         
@@ -55,10 +58,10 @@ def login():
             if not user.is_active:
                 flash('Your account has been deactivated. Please contact admin.', 'danger')
                 return redirect(url_for('auth.login'))
-            if selected_role and selected_role not in ('admin', 'staff', 'student'):
-                flash('Choose a valid account type.', 'danger')
-                return render_template('auth/login.html', selected_role=selected_role)
-            if selected_role and selected_role != user.role:
+            if user.role not in ('admin', 'staff', 'student'):
+                flash('This account does not have a supported login role.', 'danger')
+                return redirect(url_for('auth.login'))
+            if selected_role != user.role:
                 flash(f'This account is registered as {user.role.title()}. Select the correct account type and try again.', 'danger')
                 return render_template('auth/login.html', selected_role=selected_role)
             

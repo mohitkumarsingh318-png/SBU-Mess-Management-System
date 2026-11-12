@@ -13,16 +13,24 @@
                 <p class="text-muted text-center mb-4">Choose your account type to open the correct panel.</p>
                 
                 <form method="POST" action="{{ url_for('auth.login') }}">
-                    <div class="mb-3">
-                        <label for="role" class="form-label">I am logging in as</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="" disabled {{ 'selected' if not selected_role else '' }}>Select Admin, Staff, or Student</option>
-                            <option value="admin" {{ 'selected' if selected_role == 'admin' else '' }}>Admin</option>
-                            <option value="staff" {{ 'selected' if selected_role == 'staff' else '' }}>Staff</option>
-                            <option value="student" {{ 'selected' if selected_role == 'student' else '' }}>Student</option>
-                        </select>
-                        <div class="form-text">Your selection must match the role assigned to your account.</div>
-                    </div>
+                    <fieldset class="mb-3">
+                        <legend class="form-label fs-6">Sign in as</legend>
+                        <div class="d-flex gap-2" role="group" aria-label="Choose account type">
+                            <input type="radio" class="btn-check" name="role" id="role-admin" value="admin" autocomplete="off" required {{ 'checked' if selected_role == 'admin' else '' }}>
+                            <label class="btn btn-outline-primary flex-fill" for="role-admin">
+                                <i class="bi bi-shield-lock"></i> Admin
+                            </label>
+                            <input type="radio" class="btn-check" name="role" id="role-staff" value="staff" autocomplete="off" {{ 'checked' if selected_role == 'staff' else '' }}>
+                            <label class="btn btn-outline-primary flex-fill" for="role-staff">
+                                <i class="bi bi-person-workspace"></i> Staff
+                            </label>
+                            <input type="radio" class="btn-check" name="role" id="role-student" value="student" autocomplete="off" {{ 'checked' if selected_role == 'student' else '' }}>
+                            <label class="btn btn-outline-primary flex-fill" for="role-student">
+                                <i class="bi bi-person"></i> Student
+                            </label>
+                        </div>
+                        <div class="form-text">Choose the role assigned to your account.</div>
+                    </fieldset>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required autofocus>
@@ -39,9 +47,8 @@
                         </button>
                     </div>
                 </form>
-                
                 <div class="text-center">
-                    <p class="text-muted mb-0">Don't have an account? 
+                    <p class="text-muted mb-0">Don't have a student account?
                         <a href="{{ url_for('auth.register') }}">Register here</a>
                     </p>
                 </div>
