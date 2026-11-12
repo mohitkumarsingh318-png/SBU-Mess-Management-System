@@ -871,6 +871,18 @@ a:hover {
     }
 }
 
+@media (max-width: 576px) {
+    .role-selector {
+        flex-direction: column;
+    }
+
+    .role-selector .btn {
+        width: 100%;
+        margin-bottom: 0;
+        text-align: left;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

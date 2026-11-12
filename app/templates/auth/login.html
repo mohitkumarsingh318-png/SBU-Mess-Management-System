@@ -15,7 +15,7 @@
                 <form method="POST" action="{{ url_for('auth.login') }}">
                     <fieldset class="mb-3">
                         <legend class="form-label fs-6">Sign in as</legend>
-                        <div class="d-flex gap-2" role="group" aria-label="Choose account type">
+                        <div class="d-flex gap-2 role-selector" role="group" aria-label="Choose account type">
                             <input type="radio" class="btn-check" name="role" id="role-admin" value="admin" autocomplete="off" required {{ 'checked' if selected_role == 'admin' else '' }}>
                             <label class="btn btn-outline-primary flex-fill" for="role-admin">
                                 <i class="bi bi-shield-lock"></i> Admin
